@@ -1,7 +1,9 @@
+import { syncGraph } from "@/lib/http-client";
 import {
   ApiResponse,
   AppGraphStore,
   DynamicFieldConfig,
+  FieldAssociation,
   NodeWithForm,
 } from "@/stores/types";
 import { create } from "zustand";
@@ -22,6 +24,7 @@ const globalFields: Record<string, DynamicFieldConfig> = {
 const useNodeStore = create<AppGraphStore>((set, get) => ({
   nodes: [],
   forms: [],
+  fieldAssociations: [],
 
   setData: (data: ApiResponse) => {
     set({
@@ -99,6 +102,51 @@ const useNodeStore = create<AppGraphStore>((set, get) => ({
   },
 
   getGlobalFields: () => globalFields,
+
+  addFieldAssociation: (association: FieldAssociation) => {
+    set((state) => {
+      const filteredAssociations = state.fieldAssociations.filter(
+        (a) =>
+          !(
+            a.currentNodeId === association.currentNodeId &&
+            a.currentFieldKey === association.currentFieldKey
+          )
+      );
+
+      return {
+        fieldAssociations: [...filteredAssociations, association],
+      };
+    });
+  },
+
+  getFieldAssociations: (nodeId: string) => {
+    const { fieldAssociations } = get();
+    return fieldAssociations.filter((assoc) => assoc.currentNodeId === nodeId);
+  },
+
+  removeFieldAssociation: (currentNodeId: string, currentFieldKey: string) => {
+    set((state) => ({
+      fieldAssociations: state.fieldAssociations.filter(
+        (a) =>
+          !(
+            a.currentNodeId === currentNodeId &&
+            a.currentFieldKey === currentFieldKey
+          )
+      ),
+    }));
+  },
+
+  syncFieldAssociations: async () => {
+    const { fieldAssociations } = get();
+
+    try {
+      await syncGraph({ associations: fieldAssociations });
+      return true;
+    } catch (error) {
+      console.error("Failed to sync field associations:", error);
+      return false;
+    }
+  },
 }));
 
 export default useNodeStore;

@@ -41,9 +41,23 @@ export interface ApiResponse {
 export interface AppGraphStore {
   nodes: AvantosNode[];
   forms: AvantosForm[];
+  fieldAssociations: FieldAssociation[];
   setData: (data: ApiResponse) => void;
   getNode: (nodeId: string) => AvantosNode | null;
   getNodeWithForm: (nodeId: string) => NodeWithForm | null;
   getNodeWithParents: (nodeId: string) => NodeWithFormAndParents | null;
   getGlobalFields: () => Record<string, DynamicFieldConfig> | null;
+  addFieldAssociation: (association: FieldAssociation) => void;
+  getFieldAssociations: (nodeId: string) => FieldAssociation[];
+  removeFieldAssociation: (
+    currentNodeId: string,
+    currentFieldKey: string
+  ) => void;
+}
+
+export interface FieldAssociation {
+  currentNodeId: string;
+  currentFieldKey: string;
+  parentNodeId: string;
+  parentFieldKey: string;
 }
