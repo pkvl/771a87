@@ -8,7 +8,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { FormNode } from "./form-node"; // TODO fix import
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import useNodeStore from "@/stores/form-node-store";
 import { ApiResponse } from "@/stores/types";
 
@@ -19,14 +19,13 @@ type GraphCanvasProps = {
 export default function GraphCanvas({ graph }: GraphCanvasProps) {
   const { setData } = useNodeStore();
 
-  // Initialize store with SSR data
   useEffect(() => {
     if (graph) {
       setData(graph);
     }
-  }, [graph, setData]);
+  }, [graph]);
 
-  const nodeTypes = { form: FormNode };
+  const nodeTypes = useMemo(() => ({ form: FormNode }), []);
 
   return (
     <div style={{ width: "100vw", height: "100vh" }}>

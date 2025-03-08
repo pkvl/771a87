@@ -11,7 +11,7 @@ export interface AvantosForm {
   dynamic_field_config: Record<string, DynamicFieldConfig>;
 }
 
-export interface NodeData {
+export interface NodeData extends Record<string, unknown> {
   name: string;
   component_id: string;
   component_key: string;
@@ -33,7 +33,7 @@ export interface NodeWithFormAndParents extends NodeWithForm {
 }
 
 export interface ApiResponse {
-  nodes: Node[];
+  nodes: AvantosNode[];
   forms: AvantosForm[];
   edges: Edge[];
 }

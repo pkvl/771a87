@@ -2,20 +2,22 @@
 
 import useNodeStore from "@/stores/form-node-store";
 
-export function useNodeData(nodeId: string) {
-  const { getNode, getNodeWithForm, getNodeWithParents, getGlobalFields } =
-    useNodeStore();
+export function useNode(nodeId: string) {
+  const nodeStore = useNodeStore();
+  return nodeStore.getNode(nodeId);
+}
 
-  const node = getNode(nodeId);
-  const nodeWithForm = getNodeWithForm(nodeId);
-  const nodeWithParents = getNodeWithParents(nodeId);
-  const globalFields = getGlobalFields();
-  return {
-    node,
-    nodeWithForm,
-    nodeWithParents,
-    globalFields,
-    // TODO
-    // updateNode: (data: Partial<typeof node>) => updateNode(nodeId, data),
-  };
+export function useNodeWithForm(nodeId: string) {
+  const nodeStore = useNodeStore();
+  return nodeStore.getNodeWithForm(nodeId);
+}
+
+export function useNodeWithParents(nodeId: string) {
+  const nodeStore = useNodeStore();
+  return nodeStore.getNodeWithParents(nodeId);
+}
+
+export function useGlobalFields() {
+  const nodeStore = useNodeStore();
+  return nodeStore.getGlobalFields();
 }
