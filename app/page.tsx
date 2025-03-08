@@ -1,10 +1,10 @@
 import GraphCanvas from "@/components/graph-canvas";
 import { getGraph } from "@/lib/http-client";
-import { AppGraphState } from "@/stores/form-node-store";
+import { ApiResponse } from "@/stores/types";
 import { Edge } from "@xyflow/react";
 import { Suspense } from "react";
 
-async function fetchGraph(): Promise<AppGraphState> {
+async function fetchGraph(): Promise<ApiResponse> {
   const response = await getGraph();
   const graph = response?.data;
   if (graph.edges) {
@@ -19,7 +19,7 @@ async function fetchGraph(): Promise<AppGraphState> {
 
 export default async function Home() {
   const graph = await fetchGraph();
-  
+
   return (
     <>
       <Suspense fallback={<div>Loading...</div>}>

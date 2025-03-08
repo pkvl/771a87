@@ -1,33 +1,26 @@
 "use client";
-import { Handle, Position, Node } from "@xyflow/react";
-import { PrefillDrawer } from "./prefill-drawer";
+import { Handle, Position } from "@xyflow/react";
+import { PrefillDrawer } from "./prefill-drawer"; // TODO fix import
+import { NodeData } from "@/stores/types";
 
-type FormNodeProps = Node & {
-  data: {
-    id: string;
-    component_key: string;
-    component_type: string;
-    name: string;
-    prerequisites: string[];
-    permitted_roles: string[];
-    input_mapping: object;
-    sla_duration: { number: number; unit: string };
-    approval_required: boolean;
-    approval_roles: string[];
-  };
-};
+type FormNodeProps = {
+  data: NodeData;
+}
 
 export function FormNode({ data }: FormNodeProps) {
+  const styles = "p-4 border-2 rounded-lg";
+  const isPrefillAvailable = data.prerequisites?.length > 0;
+
   return (
-    <div className="border-2 border-gray-300 rounded-lg">
+    <div>
       <Handle type="target" position={Position.Left} />
-      <div className="p-4">
-        {data.prerequisites?.length > 0 ? (
-          <PrefillDrawer data={data} />
+      <>
+        {isPrefillAvailable ? (
+          <PrefillDrawer styles={`${styles} bg-accent cursor-pointer`} data={data} />
         ) : (
-          <div>{data.name}</div>
+          <div className={`${styles} bg-white`}>{data.name}</div>
         )}
-      </div>
+      </>
       <Handle type="source" position={Position.Right} />
     </div>
   );

@@ -1,27 +1,19 @@
 "use client";
 
-import { useAppStore } from "@/stores/form-node-store";
+import useNodeStore from "@/stores/form-node-store";
 
 export function useNodeData(nodeId: string) {
-  const {
-    nodes,
-    getFormById,
-    getParentFieldsToPrefill,
-    getNodeFormFields,
-    getGlobalFields,
-  } = useAppStore();
+  const { getNode, getNodeWithForm, getNodeWithParents, getGlobalFields } =
+    useNodeStore();
 
-  const node = nodes.find((n) => n.id === nodeId);
-  const form = getFormById(node?.data.component_id || "");
-  const parentFields = getParentFieldsToPrefill(nodeId);
-  const nodeFields = getNodeFormFields(nodeId);
+  const node = getNode(nodeId);
+  const nodeWithForm = getNodeWithForm(nodeId);
+  const nodeWithParents = getNodeWithParents(nodeId);
   const globalFields = getGlobalFields();
-  console.log(nodeFields);
   return {
     node,
-    form,
-    parentFields,
-    nodeFields,
+    nodeWithForm,
+    nodeWithParents,
     globalFields,
     // TODO
     // updateNode: (data: Partial<typeof node>) => updateNode(nodeId, data),

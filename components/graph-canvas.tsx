@@ -1,25 +1,30 @@
 "use client";
-import { Background, BackgroundVariant, Controls, MiniMap, ReactFlow } from "@xyflow/react";
+import {
+  Background,
+  BackgroundVariant,
+  Controls,
+  MiniMap,
+  ReactFlow,
+} from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { FormNode } from "./form-node";
+import { FormNode } from "./form-node"; // TODO fix import
 import { useEffect } from "react";
-import { AppGraphState, useAppStore } from "@/stores/form-node-store";
+import useNodeStore from "@/stores/form-node-store";
+import { ApiResponse } from "@/stores/types";
 
 type GraphCanvasProps = {
-  graph: AppGraphState;
+  graph: ApiResponse;
 };
 
 export default function GraphCanvas({ graph }: GraphCanvasProps) {
-  const { setNodes, setForms, setEdges } = useAppStore();
+  const { setData } = useNodeStore();
 
   // Initialize store with SSR data
   useEffect(() => {
     if (graph) {
-      setNodes(graph.nodes);
-      setForms(graph.forms);
-      setEdges(graph.edges);
+      setData(graph);
     }
-  }, [graph, setNodes, setForms, setEdges]);
+  }, [graph, setData]);
 
   const nodeTypes = { form: FormNode };
 
