@@ -49,7 +49,7 @@ How it works:
     "parentNodeId": "string",
     "parentFieldKey": "string",
   },
-  ...
+  //...
 ]
 ```
 - The `dynamic_field_config` object/property is used to manipulate the form fields.
