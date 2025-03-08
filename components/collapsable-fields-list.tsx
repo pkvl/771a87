@@ -1,20 +1,27 @@
 "use client";
+import { DynamicFieldConfig, FieldAssociation } from "@/stores/types";
+import { Check } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { DynamicFieldConfig, FieldAssociation } from "@/stores/types";
-import { Check } from "lucide-react";
+import { useEffect, useState } from "react";
 
+/**
+ *  nodeId - current node id
+ *  title - current form title/name
+ *  fields: string - custom fields used described in @type{DynamicFieldConfig}
+ *  selectedField - to track selected field from parent form and use it to prefill the field in current one
+ *  onSelectedParentField - method used to communicate with parent component
+ */
 type CollapsableFieldsListProps = {
   nodeId: string;
   title: string;
   fields: Record<string, DynamicFieldConfig>;
   selectedField?: FieldAssociation;
   onSelectedParentField: (association: FieldAssociation) => void;
-  onCancel?: () => void;
 };
 
 export default function CollapsableFieldsList({
@@ -24,7 +31,21 @@ export default function CollapsableFieldsList({
   selectedField,
   onSelectedParentField,
 }: CollapsableFieldsListProps) {
+  const [openItem, setOpenItem] = useState<string>("");
+
+  useEffect(() => {
+    if (selectedField?.parentNodeId === nodeId) {
+      setOpenItem(`item-${nodeId}`);
+    } else {
+      setOpenItem("");
+    }
+  }, [selectedField?.parentNodeId, nodeId]);
+
   const handleFieldClick = (key: string) => {
+    console.log(
+      selectedField?.parentNodeId === nodeId,
+      selectedField?.parentFieldKey === key
+    );
     if (
       selectedField?.parentNodeId === nodeId &&
       selectedField?.parentFieldKey === key
@@ -36,7 +57,6 @@ export default function CollapsableFieldsList({
         parentFieldKey: "",
       });
     } else {
-      // If clicking a different field or component, select the new one
       onSelectedParentField({
         currentNodeId: selectedField?.currentNodeId || "",
         currentFieldKey: selectedField?.currentFieldKey || "",
@@ -47,7 +67,13 @@ export default function CollapsableFieldsList({
   };
 
   return (
-    <Accordion type="single" collapsible className="w-full">
+    <Accordion
+      type="single"
+      collapsible
+      className="w-full"
+      value={openItem}
+      onValueChange={setOpenItem}
+    >
       <AccordionItem value={`item-${nodeId}`}>
         <AccordionTrigger>{title}</AccordionTrigger>
         <AccordionContent>

@@ -1,6 +1,7 @@
 "use client";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -8,63 +9,86 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "./ui/button"; // TODO fix import
-import CollapsableFieldsList from "./collapsable-fields-list";
-import { useGlobalFields, useNodeWithParents } from "@/hooks/use-node-data";
-import { useState } from "react";
+import { Button } from "@/components/ui/button"; // TODO fix import
+import CollapsableFieldsList from "@/components/collapsable-fields-list";
 import { FieldAssociation } from "@/stores/types";
-import { DialogClose } from "@radix-ui/react-dialog";
+import useNodeStore from "@/stores/form-node-store";
+import { toast } from "sonner";
+import { useEffect, useState } from "react";
 
+/**
+ *  nodeId - current node id
+ *  title - current form title/name
+ *  disabled - if the button for current form node field should be disabled 
+ */
 type PrefillDialogProps = {
-  title: string;
   nodeId: string;
+  title: string;
   disabled: boolean;
-  onSave: (association: FieldAssociation) => Promise<void>;
-  onCancel?: () => void;
 };
 
 export default function PrefillDialog({
-  title,
   nodeId,
+  title,
   disabled,
-  onSave,
 }: PrefillDialogProps) {
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const {
+    addFieldAssociation,
+    removeFieldAssociation,
+    getFieldAssociations,
+    getGlobalFields,
+    getNodeWithParents,
+  } = useNodeStore();
+  const nodeWithParents = getNodeWithParents(nodeId);
+  const fieldAssociations = getFieldAssociations(nodeId);
+  const globalFields = getGlobalFields();
 
-  const nodeWithParents = useNodeWithParents(nodeId);
-  const globalFields = useGlobalFields();
+  const isCurrentFieldPrefilled = fieldAssociations.some(
+    (prefill) =>
+      prefill.currentNodeId === nodeId && prefill.currentFieldKey === title
+  );
+
+  useEffect(() => {
+    const selected = fieldAssociations.find(
+      (prefill) =>
+        prefill.currentNodeId === nodeId && prefill.currentFieldKey === title
+    );
+    console.log(selected);
+    if (selected) {
+      setSelectedParentField(selected);
+    }
+  }, [nodeId]);
 
   const handleSave = async () => {
+    console.log(selectedParentField);
     if (
       !selectedParentField.currentNodeId ||
-      !selectedParentField.currentFieldKey ||
+      !selectedParentField.currentFieldKey
+    ) {
+      toast("Error: Nothing to save.");
+      return;
+    }
+    if (
       !selectedParentField.parentNodeId ||
       !selectedParentField.parentFieldKey
     ) {
-      // toast({
-      //   title: "Error",
-      //   description: "Failed to save field association.",
-      //   variant: "destructive",
-      // });
+      removeFieldAssociation(
+        selectedParentField.currentNodeId,
+        selectedParentField.currentFieldKey
+      );
+      toast("Field prefill removed successfully.");
       return;
     }
 
     setIsSaving(true);
 
     try {
-      await onSave(selectedParentField);
-
-      // toast({
-      //   title: "Success",
-      //   description: "Field association saved successfully.",
-      // });
+      addFieldAssociation(selectedParentField);
+      toast("Field prefill saved successfully.");
     } catch (error: unknown) {
       console.error(error);
-      // toast({
-      //   title: "Error",
-      //   description: "Failed to save field association.",
-      //   variant: "destructive",
-      // });
+      toast("Error: Failed to save field prefill.");
     } finally {
       setIsSaving(false);
     }
@@ -72,13 +96,14 @@ export default function PrefillDialog({
 
   const [selectedParentField, setSelectedParentField] =
     useState<FieldAssociation>({
-      currentNodeId: nodeId,
-      currentFieldKey: title,
+      currentNodeId: "",
+      currentFieldKey: "",
       parentFieldKey: "",
       parentNodeId: "",
     });
 
   const handleFieldSelection = (association: FieldAssociation) => {
+    console.log("assoc", association);
     setSelectedParentField({
       ...association,
       currentNodeId: nodeId,
@@ -94,7 +119,7 @@ export default function PrefillDialog({
           disabled={disabled}
           variant="outline"
         >
-          {title}
+          {title} {isCurrentFieldPrefilled && "⦁"}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
@@ -124,19 +149,17 @@ export default function PrefillDialog({
           ))}
         </div>
         <DialogFooter>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button
-                className="cursor-pointer"
-                type="button"
-                variant="default"
-                onClick={handleSave}
-                disabled={isSaving}
-              >
-                {isSaving ? "Saving..." : "Save"}
-              </Button>
-            </DialogClose>
-          </DialogFooter>
+          <DialogClose asChild>
+            <Button
+              className="cursor-pointer"
+              type="button"
+              variant="default"
+              onClick={handleSave}
+              disabled={isSaving}
+            >
+              {isSaving ? "Saving..." : "Save"}
+            </Button>
+          </DialogClose>
         </DialogFooter>
       </DialogContent>
     </Dialog>

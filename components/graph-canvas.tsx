@@ -7,11 +7,14 @@ import {
   ReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { FormNode } from "./form-node"; // TODO fix import
+import { FormNode } from "@/components/form-node";
 import { useEffect, useMemo } from "react";
 import useNodeStore from "@/stores/form-node-store";
 import { ApiResponse } from "@/stores/types";
 
+/**
+ * Basic API Response 
+ */
 type GraphCanvasProps = {
   graph: ApiResponse;
 };
@@ -23,7 +26,7 @@ export default function GraphCanvas({ graph }: GraphCanvasProps) {
     if (graph) {
       setData(graph);
     }
-  }, [graph]);
+  }, [setData, graph]);
 
   const nodeTypes = useMemo(() => ({ form: FormNode }), []);
 

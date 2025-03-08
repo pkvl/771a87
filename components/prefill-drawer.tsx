@@ -1,19 +1,48 @@
 "use client";
-import { Drawer, DrawerTrigger } from "@/components/ui/drawer";
-import { NodeData } from "@/stores/types";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { AvantosForm } from "@/stores/types";
 import { useDialogStore } from "@/stores/dialog-store";
-import { useNodeWithForm } from "@/hooks/use-node-data";
-import PrefillDrawerContent from "./prefill-drawer-content";
+import PrefillDialog from "@/components/prefill-dialog";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Suspense, useState } from "react";
 
+/**
+ *  styles: string - custom styles
+ *  nodeId - current node id
+ *  title - current form title/name
+ *  form - to get names for field buttons
+ *  isAnyFieldsPrefilled - to display dot sign if already edited
+ */
 type PrefillDrawerProps = {
   styles: string;
-  data: NodeData;
+  nodeId: string;
+  title: string;
+  form?: AvantosForm;
+  isAnyFieldsPrefilled: boolean;
 };
 
-export default function PrefillDrawer({ data, styles }: PrefillDrawerProps) {
+export default function PrefillDrawer({
+  styles,
+  nodeId,
+  title,
+  form,
+  isAnyFieldsPrefilled,
+}: PrefillDrawerProps) {
   const { openDialog, closeDialog, isOpen } = useDialogStore();
-  const nodeId = String(data.component_key);
-  const nodeWithForm = useNodeWithForm(nodeId);
+  const [isPrefill, setIsPrefill] = useState<boolean>(false);
+
+  const fieldKeys = form ? Object.keys(form?.dynamic_field_config ?? {}) : [];
+
   return (
     <Drawer
       open={isOpen(nodeId, "DRAWER")}
@@ -21,9 +50,56 @@ export default function PrefillDrawer({ data, styles }: PrefillDrawerProps) {
         open ? openDialog(nodeId, "DRAWER") : closeDialog(nodeId, "DRAWER")
       }
     >
-      <DrawerTrigger className={styles}>{data.name}</DrawerTrigger>
+      <DrawerTrigger className={styles}>
+        {isAnyFieldsPrefilled && "⦁"}
+        {title}
+      </DrawerTrigger>
       {isOpen(nodeId, "DRAWER") && (
-          <PrefillDrawerContent form={nodeWithForm?.form} title={String(data.name)} nodeId={nodeId} />
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle className="text-center">Prefill</DrawerTitle>
+            <DrawerDescription className="text-center">
+              {title}
+            </DrawerDescription>
+          </DrawerHeader>
+          <div className="mx-auto w-full max-w-sm flex flex-col gap-4">
+            <div className="flex gap-1.5 items-center">
+              <Checkbox
+                className="cursor-pointer"
+                id="prefill-check"
+                checked={isPrefill}
+                onCheckedChange={(checked) => setIsPrefill(checked === true)}
+              />
+              <label
+                htmlFor="prefill-check"
+                className="text-sm font-medium leading-none cursor-pointer peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Prefill fields for this form
+              </label>
+            </div>
+            <div className="flex flex-col gap-4">
+              <Suspense fallback={<div>Loading dialogs...</div>}>
+                {fieldKeys.map((fieldName) => {
+                  return (
+                    <PrefillDialog
+                      key={`${nodeId}-${fieldName}`}
+                      title={fieldName}
+                      nodeId={nodeId || ""}
+                      disabled={!isPrefill}
+                    />
+                  );
+                })}
+              </Suspense>
+            </div>
+          </div>
+          <DrawerFooter>
+            <DrawerClose asChild>
+              <Button variant="outline" className="cursor-pointer">
+                Close
+              </Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
       )}
     </Drawer>
   );
