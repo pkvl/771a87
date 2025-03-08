@@ -44,10 +44,10 @@ How it works:
 ```json
 [
   {
-    currentNodeId: string,
-    currentFieldKey: string,
-    parentNodeId: string,
-    parentFieldKey: string,
+    "currentNodeId": "string",
+    "currentFieldKey": "string",
+    "parentNodeId": "string",
+    "parentFieldKey": "string",
   },
   ...
 ]
